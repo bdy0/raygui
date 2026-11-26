@@ -287,7 +287,7 @@
 *       0.8 (27-Aug-2015) Initial release. Implemented by Kevin Gato, Daniel Nicolás and Ramon Santamaria
 *
 *   DEPENDENCIES:
-*       raylib 6.1-dev  - Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
+*       raylib 6.2  - Inputs reading (keyboard/mouse), shapes drawing, font loading and text drawing
 *
 *   STANDALONE MODE:
 *       By default raygui depends on raylib mostly for the inputs and the drawing functionality but that dependency can be disabled
@@ -1624,7 +1624,9 @@ static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color
 
 static void GuiTooltip(Rectangle controlRec);                   // Draw tooltip using control rec position
 static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue); // Scroll bar control, used by GuiScrollPanel()
+#if defined(RAYGUI_FONT_ICONS_BAKING)
 static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec); // Update font image atlas to append raygui icons
+#endif
 
 static Color GuiFade(Color color, float alpha); // Fade color by an alpha factor
 
@@ -2699,7 +2701,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                     if (pasteLength > 0)
                     {
                         // Move forward data from cursor position
-                        for (int i = textLength + pasteLength; (i > textBoxCursorIndex) && (i < pasteLength); i--) text[i] = text[i - pasteLength];
+                        for (int i = textLength + pasteLength; i >= (textBoxCursorIndex + pasteLength); i--) text[i] = text[i - pasteLength];
 
                         // Paste data in at cursor
                         for (int i = 0; i < pasteLength; i++) text[textBoxCursorIndex + i] = pasteText[i];
@@ -2717,7 +2719,7 @@ int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode)
                 // Adding codepoint to text, at current cursor position
 
                 // Move forward data from cursor position
-                for (int i = (textLength + codepointSize); i > textBoxCursorIndex; i--) text[i] = text[i - codepointSize];
+                for (int i = (textLength + codepointSize); i >= (textBoxCursorIndex + codepointSize); i--) text[i] = text[i - codepointSize];
 
                 // Add new codepoint in current cursor position
                 for (int i = 0; i < codepointSize; i++) text[textBoxCursorIndex + i] = charEncoded[i];
@@ -5353,6 +5355,7 @@ void GuiSetIconScale(int scale)
 {
     if (scale >= 1) guiIconScale = scale;
 }
+#endif      // !RAYGUI_NO_ICONS
 
 // Get text width considering gui style and icon size (if required).
 // For multi-line text (containing '\n'), returns the width of the widest line.
@@ -5380,7 +5383,6 @@ int GuiGetTextWidth(const char *text)
     return maxWidth;
 }
 
-#endif      // !RAYGUI_NO_ICONS
 
 //----------------------------------------------------------------------------------
 // Module Internal Functions Definition
@@ -6018,6 +6020,7 @@ static int GuiScrollBar(Rectangle bounds, int value, int minValue, int maxValue)
     return value;
 }
 
+#if defined(RAYGUI_FONT_ICONS_BAKING)
 // Update font image atlas to append raygui icons
 static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec)
 {
@@ -6101,6 +6104,7 @@ static int GuiFontIconBaking(Image *imFont, Font font, Rectangle *whiteRec)
 
     return iconOffsetY;
 }
+#endif
 
 // Split controls text into multiple strings
 // NOTE: Re-used by GuiToggleSlider(), GuiComboBox(), GuiDropdownBox(), GuiListView(), GuiMessageBox(), GuiInputBox()
